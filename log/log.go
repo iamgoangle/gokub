@@ -19,14 +19,18 @@ func (l *Logger) Info(m string) {
 	l.wrapLogger.Info(m)
 }
 
-func init() {
+func initZapLogger() *zap.Logger {
 	// initialize uber/zap logger
 	z, err := zap.NewProduction()
 	if err != nil {
 		panic("[init]: unable to initialize logger")
 	}
+	
+	return z
+}
 
-	logger = Logger{wrapLogger: z}
+func init() {
+	logger = Logger{wrapLogger: initZapLogger()}
 }
 
 func Info(m string){
