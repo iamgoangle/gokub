@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	log.Info("hello, world")
+	log.Debug("Debug -- hello, world")
+	log.Info("Info -- hello, world")
 }
