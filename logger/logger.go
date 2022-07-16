@@ -2,8 +2,6 @@ package logger
 
 import (
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"os"
 )
 
 var (
@@ -36,13 +34,15 @@ type Logger struct {
 	wrapLogger *zap.Logger
 }
 
+// LoggerOpts represents logger options
 type LoggerOpts struct {
 	Environment string
 }
 
+type Fields []Field
 type Field struct {
 	Key string
-	Val string
+	Val interface{}
 }
 
 func (l *Logger) Info(m string) {
@@ -57,34 +57,6 @@ func init() {
 	}
 }
 
-func initZapLogger(options ...func(*zap.Logger) error) *zap.Logger {
-	// initialize uber/zap logger
-	loggerConfig := zap.NewProductionConfig()
-	loggerConfig.EncoderConfig.TimeKey = "timestamp"
-	loggerConfig.EncoderConfig.EncodeTime = zapcore.EpochMillisTimeEncoder
-
-	// entry fields
-	fields := zap.Fields(
-		zap.String("env", os.Getenv("APP_ENV")),
-		zap.String("app_name", os.Getenv("APP_NAME")),
-	)
-
-	z, err := loggerConfig.Build(fields)
-	if err != nil {
-		panic("[init]: unable to initialize logger")
-	}
-	defer z.Sync() // flushes buffer
-
-	for _, op := range options {
-		err := op(z)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return z
-}
-
 // setLogLevelByEnv automatic set logger level by environment and above logging
 func setLogLevelByEnv(env Environment) func(*zap.Logger) error {
 	return func(z *zap.Logger) error {
@@ -97,24 +69,4 @@ func setLogLevelByEnv(env Environment) func(*zap.Logger) error {
 
 		return nil
 	}
-}
-
-// Info logs a message at InfoLevel.
-func Info(m string) {
-	logger.wrapLogger.Info(m)
-}
-
-// Infof uses fmt.Sprintf to log a templated message
-func Infof(m string, v interface{}) {
-	logger.wrapLogger.Sugar().Infof(m, v)
-}
-
-// Panic logs a message at PanicLevel.
-func Panic(m string) {
-	logger.wrapLogger.Panic(m)
-}
-
-// Debug logs a message at DebugLevel.
-func Debug(m string) {
-	logger.wrapLogger.Debug(m)
 }

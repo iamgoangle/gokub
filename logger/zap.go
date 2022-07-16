@@ -1,6 +1,9 @@
 package logger
 
 import (
+	"os"
+
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -30,3 +33,31 @@ const (
 	// FatalLevel logs a message, then calls os.Exit(1).
 	FatalLevel = zapcore.FatalLevel
 )
+
+func initZapLogger(options ...func(*zap.Logger) error) *zap.Logger {
+	// initialize uber/zap logger
+	loggerConfig := zap.NewProductionConfig()
+	loggerConfig.EncoderConfig.TimeKey = "timestamp"
+	loggerConfig.EncoderConfig.EncodeTime = zapcore.EpochMillisTimeEncoder
+
+	// entry fields
+	fields := zap.Fields(
+		zap.String("env", os.Getenv("APP_ENV")),
+		zap.String("app_name", os.Getenv("APP_NAME")),
+	)
+
+	z, err := loggerConfig.Build(fields)
+	if err != nil {
+		panic("[init]: unable to initialize logger")
+	}
+	defer z.Sync() // flushes buffer
+
+	for _, op := range options {
+		err := op(z)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return z
+}

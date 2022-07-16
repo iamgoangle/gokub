@@ -5,7 +5,11 @@ import (
 )
 
 func main() {
-	logger.Debug("Debug -- hello, world")
-	logger.Info("Info -- hello, world")
-	logger.Infof("Hello %s", "Golf")
+	//logger.Debug("Debug -- hello, world")
+	//logger.Info("Info -- hello, world")
+	//logger.Infof("Hello %s", "Golf")
+
+	logger.InfoWithFields("[test]: golf", logger.Fields{
+		logger.Field{Key: "test", Val: "value"},
+	})
 }
