@@ -45,10 +45,6 @@ type Field struct {
 	Val interface{}
 }
 
-func (l *Logger) Info(m string) {
-	l.wrapLogger.Info(m)
-}
-
 func init() {
 	logger = Logger{
 		wrapLogger: initZapLogger(
