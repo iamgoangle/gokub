@@ -1,4 +1,4 @@
-package main
+package slack
 
 import (
 	"errors"
@@ -27,10 +27,7 @@ type Slack struct {
 	cfg *Configs
 }
 
-type Payload struct {
-	Text string `json:"text,omitempty"`
-}
-
+// New new slack client
 func New(cfg *Configs) (*Slack, error) {
 	if len(cfg.WebhookURL) == 0 {
 		return nil, errors.New("[New]: invalid configs")
@@ -41,6 +38,7 @@ func New(cfg *Configs) (*Slack, error) {
 	}, nil
 }
 
+// SendMessage sends a message to Slack webhook
 func (s *Slack) SendMessage(payload *Payload) error {
 	request := gorequest.New().Timeout(s.cfg.Timeout)
 	request.Header.Set("Content-Type", "application/json")
@@ -52,7 +50,7 @@ func (s *Slack) SendMessage(payload *Payload) error {
 		Retry(s.cfg.RetryMax, s.cfg.NextRetryTime, http.StatusInternalServerError).
 		End()
 	if err != nil {
-		return fmt.Errorf("[Slack.SendMessage]: unable to send message %w", err)
+		return fmt.Errorf("[Slack.SendMessage]: unable to send message %w", err[0])
 	}
 
 	if resp.StatusCode != http.StatusOK {
